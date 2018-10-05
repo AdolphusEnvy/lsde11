@@ -134,7 +134,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 		// then we can create a tuple for each transaction input: Destination Address (which can be found in the output!), Input Transaction Hash, Current Transaction Hash, Current Transaction Output
 		// as you can see there is no 1:1 or 1:n mapping from input to output in the Bitcoin blockchain, but n:m (all inputs are assigned to all outputs), cf. https://en.bitcoin.it/wiki/From_address
-		val result:Array[(String,Array[Byte],Long,Array[Byte], Long)]=new Array[(String,Array[Byte],Long,Array[Byte],Long)](resultSize)
+		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int)](resultSize)
 		var resultCounter: Int = 0
 		for (i <- 0 to transactionCount-1) { // for each transaction
 			val currentTransaction=bitcoinBlock.getTransactions().get(i)
