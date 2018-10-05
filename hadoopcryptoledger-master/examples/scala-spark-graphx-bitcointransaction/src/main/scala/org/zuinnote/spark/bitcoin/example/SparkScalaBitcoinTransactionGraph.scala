@@ -99,7 +99,7 @@ object SparkScalaBitcoinTransactionGraph {
 			// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
 			val inputTransactionTupleByHashIdx = inputTransactionTupleWithIndex.map(iTTuple => (iTTuple._2._1,(iTTuple._2._2,iTTuple._1)))
 			val currentTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._4),bitcoinTransactions._5)))
-				currentTransactionTuple.take(5).foreach(println)
+
 			val currentTransactionTupleWithIndex = currentTransactionTuple.join(bitcoinAddressIndexed)
 			// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
 			val currentTransactionTupleByHashIdx = currentTransactionTupleWithIndex.map{cTTuple => (cTTuple._2._1,(cTTuple._2._2,cTTuple._1))}
@@ -108,6 +108,7 @@ object SparkScalaBitcoinTransactionGraph {
 			// create vertices => vertexId,bitcoinaddress
 			val bitcoinTransactionVertices = bitcoinAddressIndexed.map{case (k,v) => (v,k)}
 			// crearte edes
+		bitcoinTransactionVertices.take(5).foreach(println)
 			val bitcoinTransactionEdges = joinedTransactions.map(joinTuple=>Edge(joinTuple._2._1._1,joinTuple._2._2._1,"input") )
 			// create a default Bitcoin address in case we have transactions that point no-where
 			val missingBitcoinAddress = ("missing")
