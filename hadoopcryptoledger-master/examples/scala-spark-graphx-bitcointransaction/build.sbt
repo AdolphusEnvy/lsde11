@@ -28,11 +28,11 @@ assemblyJarName in assembly := "example-hcl-spark-scala-graphx-bitcointransactio
 
 libraryDependencies += "com.github.zuinnote" % "hadoopcryptoledger-fileformat" % "1.2.0" % "compile"
 
-libraryDependencies += "org.apache.spark" %% "spark-core" % "1.5.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-core" % "2.1.1" % "provided"
 
-libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.5.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.1.1" % "provided"
 
-libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.5.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-graphx" % "2.1.1" % "provided"
 
 libraryDependencies += "org.apache.hadoop" % "hadoop-client" % "2.7.0" % "provided"
 
