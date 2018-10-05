@@ -74,8 +74,9 @@ object SparkScalaBitcoinTransactionGraph {
 		)
 		val sqlContext= new SQLContext(sc)
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var centralTranscations=btcDF.filter("dest_address='1Lughwk11SAsz54wZJ3bpGbNqGfVanMWzk'")
-		btcDF.show(100)
+		var centralTranscations=btcDF.filter("dest_address='bitcoinpubkey_02b1a7a710382e82bfb5341006aa2e8aff69388770d0289039d5ef91d9b075c010'")
+		centralTranscations.show(10)
+		btcDF.show(10)
 
 		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
 			val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
@@ -118,7 +119,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 			val inDegreeInformation = graph.outerJoinVertices(graph.inDegrees)((vid,bitcoinAddress,deg) => (bitcoinAddress,deg.getOrElse(0)))
 		    	// save top 5 bitcoin addresses with the most inputs in output directory
-		inDegreeInformation.take(5).foreach(println)
+		inDegreeInformation.vertices.top(5).foreach(println)
 			val saveRdd=sc.parallelize(inDegreeInformation.vertices.top(5)(Ordering.by(_._2._2)))
 			saveRdd.repartition(1).saveAsTextFile(outputFile)
 	}
