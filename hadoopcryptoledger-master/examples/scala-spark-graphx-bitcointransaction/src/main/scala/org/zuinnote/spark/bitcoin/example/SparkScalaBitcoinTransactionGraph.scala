@@ -73,7 +73,7 @@ object SparkScalaBitcoinTransactionGraph {
 		)
 		val sqlContext= new org.apache.spark.sql.SQLContext(sc)
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var centralTranscations=btcDF.select($"dest_address"===centralAddess)
+		var centralTranscations=btcDF.filter("dest_address="+centralAddess)
 		btcDF.show(100)
 //		for(var current_degree<-0 to degree)
 //		{
