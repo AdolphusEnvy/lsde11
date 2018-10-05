@@ -108,7 +108,7 @@ object SparkScalaBitcoinTransactionGraph {
 			// create vertices => vertexId,bitcoinaddress
 			val bitcoinTransactionVertices = bitcoinAddressIndexed.map{case (k,v) => (v,k)}
 			// crearte edes
-		bitcoinTransactionVertices.take(5).foreach(println)
+
 			val bitcoinTransactionEdges = joinedTransactions.map(joinTuple=>Edge(joinTuple._2._1._1,joinTuple._2._2._1,"input") )
 			// create a default Bitcoin address in case we have transactions that point no-where
 			val missingBitcoinAddress = ("missing")
@@ -118,6 +118,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 			val inDegreeInformation = graph.outerJoinVertices(graph.inDegrees)((vid,bitcoinAddress,deg) => (bitcoinAddress,deg.getOrElse(0)))
 		    	// save top 5 bitcoin addresses with the most inputs in output directory
+		inDegreeInformation.take(5).foreach(println)
 			val saveRdd=sc.parallelize(inDegreeInformation.vertices.top(5)(Ordering.by(_._2._2)))
 			saveRdd.repartition(1).saveAsTextFile(outputFile)
 	}
