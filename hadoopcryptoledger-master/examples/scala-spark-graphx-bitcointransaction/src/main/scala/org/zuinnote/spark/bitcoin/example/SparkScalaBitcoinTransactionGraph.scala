@@ -19,7 +19,7 @@ package org.zuinnote.spark.bitcoin.example
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.hadoop.conf._
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
 import org.apache.hadoop.mapreduce._
