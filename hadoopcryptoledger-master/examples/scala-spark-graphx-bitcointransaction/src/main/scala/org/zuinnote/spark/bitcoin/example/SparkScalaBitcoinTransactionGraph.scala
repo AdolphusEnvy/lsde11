@@ -50,11 +50,11 @@ object SparkScalaBitcoinTransactionGraph {
 		val sc=new SparkContext(conf)
 		val hadoopConf = new Configuration();
 		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
-		jobTop5AddressInput(sc,hadoopConf,args(0),args(1),args(2),args(3))
+		jobTop5AddressInput(sc,hadoopConf,args(0),args(1))
 		sc.stop()
 	}
 
-	def jobTop5AddressInput(sc: SparkContext, hadoopConf: Configuration, inputFile: String, outputFile: String, centralAddess: String, degree: String): Unit = {
+	def jobTop5AddressInput(sc: SparkContext, hadoopConf: Configuration, inputFile: String, outputFile: String): Unit = {
 		val bitcoinBlocksRDD = sc.newAPIHadoopFile(inputFile, classOf[BitcoinBlockFileInputFormat], classOf[BytesWritable], classOf[BitcoinBlock],hadoopConf)
 		// extract a tuple per transaction containing Bitcoin destination address, the input transaction hash, the input transaction output index, and the current transaction hash, the current transaction output index, a (generated) long identifier
 		val bitcoinTransactionTuples = bitcoinBlocksRDD.flatMap(hadoopKeyValueTuple => extractTransactionData(hadoopKeyValueTuple._2))
@@ -73,7 +73,7 @@ object SparkScalaBitcoinTransactionGraph {
 		)
 		val sqlContext= new org.apache.spark.sql.SQLContext(sc)
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var centralTranscations=btcDF.filter("dest_address="+centralAddess)
+		var centralTranscations=btcDF.filter("dest_address='1Lughwk11SAsz54wZJ3bpGbNqGfVanMWzk'")
 		btcDF.show(100)
 //		for(var current_degree<-0 to degree)
 //		{
