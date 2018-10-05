@@ -30,6 +30,8 @@ libraryDependencies += "com.github.zuinnote" % "hadoopcryptoledger-fileformat" %
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % "1.5.0" % "provided"
 
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.5.0" % "provided"
+
 libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.5.0" % "provided"
 
 libraryDependencies += "org.apache.hadoop" % "hadoop-client" % "2.7.0" % "provided"
