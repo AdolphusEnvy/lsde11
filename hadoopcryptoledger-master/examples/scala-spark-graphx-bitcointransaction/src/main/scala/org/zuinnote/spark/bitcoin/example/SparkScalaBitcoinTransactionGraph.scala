@@ -124,7 +124,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long)] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int)] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
