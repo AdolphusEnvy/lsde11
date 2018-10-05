@@ -146,7 +146,7 @@ object SparkScalaBitcoinTransactionGraph {
 				for (k <-0 to currentTransaction.getListOfOutputs().size()-1) {
 					val currentTransactionOutput=currentTransaction.getListOfOutputs().get(k)
 					var currentTransactionOutputIndex=k.toLong
-					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex)
+					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime())
 					resultCounter+=1
 				}
 			}
