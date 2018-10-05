@@ -75,52 +75,48 @@ object SparkScalaBitcoinTransactionGraph {
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter("dest_address='1Lughwk11SAsz54wZJ3bpGbNqGfVanMWzk'")
 		btcDF.show(100)
-//		for(var current_degree<-0 to degree)
-//		{
-//			centralTranscations=centralTranscations.select($"")
-//		}
 
 		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
-		//	val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
-		//	// create the edges. Basically we need to determine which inputVertexId refers to which outputVertex Id.
-		//	// This is basically a self join, where ((currentTransactionHash,currentOutputIndex), identfier) is joined with ((inputTransactionHash,currentinputIndex), indentifier)
-		//	// a self join consumes a lot of resources, however there is no other way to create the graph
-		//	// for production systems the following is recommended
-		//	// 1) save bitcoinTransactionTuples to a file
-		//	// 2) save the self-joined data to a file
-		//	// 3) if new data arrives:
-		//	// 	append new data bitcoinTransactionTuples and make sure that subsequent identifiers are generated for them
-		//	//	get the generated identifiers for the new data together with the corresponding new data
-		//	//	join the new data with bitcoinTransactionTuples
-		//	//	append the joined data to the self-joined data in the file
-		//	//	join the new vertices with the old graph in-memory
-		//	// 	rerun any algorithm
-		//	// (bitcoinAddress,(byteArrayTransaction, TransactionIndex)
-		//	val inputTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._2),bitcoinTransactions._3)))
-		//	// (bitcoinAddress,((byteArrayTransaction, TransactionIndex),vertexid))
-		//	val inputTransactionTupleWithIndex = inputTransactionTuple.join(bitcoinAddressIndexed)
-		//	// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
-		//	val inputTransactionTupleByHashIdx = inputTransactionTupleWithIndex.map(iTTuple => (iTTuple._2._1,(iTTuple._2._2,iTTuple._1)))
-		//	val currentTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._4),bitcoinTransactions._5)))
-		//	val currentTransactionTupleWithIndex = currentTransactionTuple.join(bitcoinAddressIndexed)
-		//	// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
-		//	val currentTransactionTupleByHashIdx = currentTransactionTupleWithIndex.map{cTTuple => (cTTuple._2._1,(cTTuple._2._2,cTTuple._1))}
-		//	// the join creates ((ByteArray, Idx), (srcIdx,srcAdress), (destIdx,destAddress)
-		//	val joinedTransactions = inputTransactionTupleByHashIdx.join(currentTransactionTupleByHashIdx)
-		//	// create vertices => vertexId,bitcoinaddress
-		//	val bitcoinTransactionVertices = bitcoinAddressIndexed.map{case (k,v) => (v,k)}
-		//	// crearte edes
-		//	val bitcoinTransactionEdges = joinedTransactions.map(joinTuple=>Edge(joinTuple._2._1._1,joinTuple._2._2._1,"input") )
-		//	// create a default Bitcoin address in case we have transactions that point no-where
-		//	val missingBitcoinAddress = ("missing")
-		//	// create graph
-		//	val graph = Graph(bitcoinTransactionVertices, bitcoinTransactionEdges, missingBitcoinAddress)
-		//	// calculate input degrees
-		//
-		//	val inDegreeInformation = graph.outerJoinVertices(graph.inDegrees)((vid,bitcoinAddress,deg) => (bitcoinAddress,deg.getOrElse(0)))
-		//    	// save top 5 bitcoin addresses with the most inputs in output directory
-		//	val saveRdd=sc.parallelize(inDegreeInformation.vertices.top(5)(Ordering.by(_._2._2)))
-		//	saveRdd.repartition(1).saveAsTextFile(outputFile)
+			val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
+			// create the edges. Basically we need to determine which inputVertexId refers to which outputVertex Id.
+			// This is basically a self join, where ((currentTransactionHash,currentOutputIndex), identfier) is joined with ((inputTransactionHash,currentinputIndex), indentifier)
+			// a self join consumes a lot of resources, however there is no other way to create the graph
+			// for production systems the following is recommended
+			// 1) save bitcoinTransactionTuples to a file
+			// 2) save the self-joined data to a file
+			// 3) if new data arrives:
+			// 	append new data bitcoinTransactionTuples and make sure that subsequent identifiers are generated for them
+			//	get the generated identifiers for the new data together with the corresponding new data
+			//	join the new data with bitcoinTransactionTuples
+			//	append the joined data to the self-joined data in the file
+			//	join the new vertices with the old graph in-memory
+			// 	rerun any algorithm
+			// (bitcoinAddress,(byteArrayTransaction, TransactionIndex)
+			val inputTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._2),bitcoinTransactions._3)))
+			// (bitcoinAddress,((byteArrayTransaction, TransactionIndex),vertexid))
+			val inputTransactionTupleWithIndex = inputTransactionTuple.join(bitcoinAddressIndexed)
+			// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
+			val inputTransactionTupleByHashIdx = inputTransactionTupleWithIndex.map(iTTuple => (iTTuple._2._1,(iTTuple._2._2,iTTuple._1)))
+			val currentTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._4),bitcoinTransactions._5)))
+			val currentTransactionTupleWithIndex = currentTransactionTuple.join(bitcoinAddressIndexed)
+			// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
+			val currentTransactionTupleByHashIdx = currentTransactionTupleWithIndex.map{cTTuple => (cTTuple._2._1,(cTTuple._2._2,cTTuple._1))}
+			// the join creates ((ByteArray, Idx), (srcIdx,srcAdress), (destIdx,destAddress)
+			val joinedTransactions = inputTransactionTupleByHashIdx.join(currentTransactionTupleByHashIdx)
+			// create vertices => vertexId,bitcoinaddress
+			val bitcoinTransactionVertices = bitcoinAddressIndexed.map{case (k,v) => (v,k)}
+			// crearte edes
+			val bitcoinTransactionEdges = joinedTransactions.map(joinTuple=>Edge(joinTuple._2._1._1,joinTuple._2._2._1,"input") )
+			// create a default Bitcoin address in case we have transactions that point no-where
+			val missingBitcoinAddress = ("missing")
+			// create graph
+			val graph = Graph(bitcoinTransactionVertices, bitcoinTransactionEdges, missingBitcoinAddress)
+			// calculate input degrees
+
+			val inDegreeInformation = graph.outerJoinVertices(graph.inDegrees)((vid,bitcoinAddress,deg) => (bitcoinAddress,deg.getOrElse(0)))
+		    	// save top 5 bitcoin addresses with the most inputs in output directory
+			val saveRdd=sc.parallelize(inDegreeInformation.vertices.top(5)(Ordering.by(_._2._2)))
+			saveRdd.repartition(1).saveAsTextFile(outputFile)
 	}
 
 	// extract relevant data
