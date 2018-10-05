@@ -96,6 +96,7 @@ object SparkScalaBitcoinTransactionGraph {
 			val inputTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._2),bitcoinTransactions._3)))
 			// (bitcoinAddress,((byteArrayTransaction, TransactionIndex),vertexid))
 			val inputTransactionTupleWithIndex = inputTransactionTuple.join(bitcoinAddressIndexed)
+			inputTransactionTupleWithIndex.show(5)
 			// (byteArrayTransaction, TransactionIndex), (vertexid, bitcoinAddress)
 			val inputTransactionTupleByHashIdx = inputTransactionTupleWithIndex.map(iTTuple => (iTTuple._2._1,(iTTuple._2._2,iTTuple._1)))
 			val currentTransactionTuple =  bitcoinTransactionTuples.map(bitcoinTransactions => (bitcoinTransactions._1,(new ByteArray(bitcoinTransactions._4),bitcoinTransactions._5)))
