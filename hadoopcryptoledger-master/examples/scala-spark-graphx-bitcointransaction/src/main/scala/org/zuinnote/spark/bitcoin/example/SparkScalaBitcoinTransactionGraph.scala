@@ -60,7 +60,7 @@ object SparkScalaBitcoinTransactionGraph {
 		// extract a tuple per transaction containing Bitcoin destination address, the input transaction hash, the input transaction output index, and the current transaction hash, the current transaction output index, a (generated) long identifier
 		val bitcoinTransactionTuples = bitcoinBlocksRDD.flatMap(hadoopKeyValueTuple => extractTransactionData(hadoopKeyValueTuple._2))
 
-		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6))
+		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1.substring(14), p._2, p._3, p._4, p._5, p._6))
 
 		val transactionSchema = StructType(
 			Array(
