@@ -22,6 +22,7 @@ import org.apache.hadoop.conf._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.graphx._
+import org.apache.spark.sql.SQLContext.implicits._
 
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io._
