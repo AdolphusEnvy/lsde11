@@ -75,7 +75,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_input_output_idx", LongType, false),
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
-				StructField("timestamp", IntegerType, false)
+				StructField("timestamp", IntegerType, false),
 				StructField("value",Decimal,false)
 			)
 		)
@@ -134,7 +134,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int)] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int),BigDecimal] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
