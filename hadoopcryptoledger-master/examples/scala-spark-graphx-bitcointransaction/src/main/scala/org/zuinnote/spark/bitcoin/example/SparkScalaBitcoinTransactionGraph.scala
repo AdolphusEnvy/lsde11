@@ -95,13 +95,13 @@ object SparkScalaBitcoinTransactionGraph {
 		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree1.csv")
 
 
-		val source_degree1=joined_degree1.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp").toDF(outputSourceNames:_*)
+		val source_degree1=joined_degree1.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp",$"source_value").toDF(outputSourceNames:_*)
 		val joined_degree2=source_degree1.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
 		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree2.csv")
 
 
-		val source_degree2=joined_degree2.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp").toDF(outputSourceNames:_*)
+		val source_degree2=joined_degree2.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp",$"source_value").toDF(outputSourceNames:_*)
 		val joined_degree3=source_degree2.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
 		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree3.csv")
