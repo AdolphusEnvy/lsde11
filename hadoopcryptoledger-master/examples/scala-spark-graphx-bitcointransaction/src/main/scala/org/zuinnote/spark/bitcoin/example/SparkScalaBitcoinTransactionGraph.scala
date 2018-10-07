@@ -90,19 +90,19 @@ object SparkScalaBitcoinTransactionGraph {
 		val sourceDF=btcDF.toDF(inputSourceNames:_*)
 		val joined_degree1=centralTranscations.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree1.show(10)
-		joined_degree1.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree1.csv")
+		joined_degree1.select($"dest_address",$"source_address").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree1.csv")
 
 
 		val source_degree1=joined_degree1.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp").toDF(outputSourceNames:_*)
 		val joined_degree2=source_degree1.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
-		joined_degree2.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree2.csv")
+		joined_degree2.select($"dest_address",$"source_address").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree2.csv")
 
 
 		val source_degree2=joined_degree2.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp").toDF(outputSourceNames:_*)
 		val joined_degree3=source_degree2.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
-		joined_degree2.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree3.csv")
+		joined_degree2.select($"dest_address",$"source_address").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree3.csv")
 //		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
 //			val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
 //			// create the edges. Basically we need to determine which inputVertexId refers to which outputVertex Id.
