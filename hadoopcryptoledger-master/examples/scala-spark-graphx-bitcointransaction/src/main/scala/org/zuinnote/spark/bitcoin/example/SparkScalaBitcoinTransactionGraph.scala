@@ -53,7 +53,6 @@ object SparkScalaBitcoinTransactionGraph {
 		val sc=new SparkContext(conf)
 		val hadoopConf = new Configuration();
 		val spark = org.apache.spark.sql.SparkSession.builder()
-			.appName("lsde11")
 			.getOrCreate()
 
 		import spark.implicits._
