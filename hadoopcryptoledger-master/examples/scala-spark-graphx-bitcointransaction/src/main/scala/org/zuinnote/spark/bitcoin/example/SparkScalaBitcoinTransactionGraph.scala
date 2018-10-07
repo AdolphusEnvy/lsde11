@@ -76,7 +76,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_input_output_idx", LongType, false),
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
-				StructField("timestamp", IntegerType, false)
+				StructField("timestamp", IntegerType, false),
 				StructField("value",LongType,false)
 			)
 		)
