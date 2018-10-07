@@ -76,7 +76,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
 				StructField("timestamp", IntegerType, false),
-				StructField("value",LongType,false)
+				StructField("value",DecimalType,false)
 			)
 		)
 		val sqlContext= new SQLContext(sc)
@@ -138,7 +138,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,Long)] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigDecimal)] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
@@ -148,7 +148,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 		// then we can create a tuple for each transaction input: Destination Address (which can be found in the output!), Input Transaction Hash, Current Transaction Hash, Current Transaction Output
 		// as you can see there is no 1:1 or 1:n mapping from input to output in the Bitcoin blockchain, but n:m (all inputs are assigned to all outputs), cf. https://en.bitcoin.it/wiki/From_address
-		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int,Long)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int,Long)](resultSize)
+		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigDecimal)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int,BigDecimal)](resultSize)
 		var resultCounter: Int = 0
 		for (i <- 0 to transactionCount-1) { // for each transaction
 			val currentTransaction=bitcoinBlock.getTransactions().get(i)
