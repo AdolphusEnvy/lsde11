@@ -16,6 +16,7 @@
 
 package org.zuinnote.spark.bitcoin.example
 
+import com.sun.jdi.LongType
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.hadoop.conf._
@@ -66,7 +67,7 @@ object SparkScalaBitcoinTransactionGraph {
 		// extract a tuple per transaction containing Bitcoin destination address, the input transaction hash, the input transaction output index, and the current transaction hash, the current transaction output index, a (generated) long identifier
 		val bitcoinTransactionTuples = bitcoinBlocksRDD.flatMap(hadoopKeyValueTuple => extractTransactionData(hadoopKeyValueTuple._2))
 
-		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6))
+		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6,p._7))
 
 		val transactionSchema = StructType(
 			Array(
@@ -76,6 +77,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
 				StructField("timestamp", IntegerType, false)
+				StructField("value",LongType,false)
 			)
 		)
 		val sqlContext= new SQLContext(sc)
@@ -84,25 +86,25 @@ object SparkScalaBitcoinTransactionGraph {
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_99BC78BA577A95A11F1A344D4D2AE55F2F857B98"))
 		centralTranscations.show(10)
-		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp")
-		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp")
+		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp","value")
+		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp","source_value")
 		//btcDF.show(10)
 		val sourceDF=btcDF.toDF(inputSourceNames:_*)
 		val joined_degree1=centralTranscations.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree1.show(10)
-		joined_degree1.select($"dest_address",$"source_address").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree1.csv")
+		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree1.csv")
 
 
 		val source_degree1=joined_degree1.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp").toDF(outputSourceNames:_*)
 		val joined_degree2=source_degree1.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
-		joined_degree2.select($"dest_address",$"source_address").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree2.csv")
+		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree2.csv")
 
 
 		val source_degree2=joined_degree2.select($"source_address",$"source_trans_input_hash",$"source_trans_input_output_idx",$"source_trans_hash",$"source_trans_output_idx",$"source_timestamp").toDF(outputSourceNames:_*)
 		val joined_degree3=source_degree2.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
-		joined_degree2.select($"dest_address",$"source_address").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree3.csv")
+		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/degree3.csv")
 //		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
 //			val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
 //			// create the edges. Basically we need to determine which inputVertexId refers to which outputVertex Id.
@@ -150,7 +152,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int)] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,Long)] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
@@ -160,7 +162,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 		// then we can create a tuple for each transaction input: Destination Address (which can be found in the output!), Input Transaction Hash, Current Transaction Hash, Current Transaction Output
 		// as you can see there is no 1:1 or 1:n mapping from input to output in the Bitcoin blockchain, but n:m (all inputs are assigned to all outputs), cf. https://en.bitcoin.it/wiki/From_address
-		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int)](resultSize)
+		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int,Long)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int,Long)](resultSize)
 		var resultCounter: Int = 0
 		for (i <- 0 to transactionCount-1) { // for each transaction
 			val currentTransaction=bitcoinBlock.getTransactions().get(i)
@@ -172,7 +174,7 @@ object SparkScalaBitcoinTransactionGraph {
 				for (k <-0 to currentTransaction.getListOfOutputs().size()-1) {
 					val currentTransactionOutput=currentTransaction.getListOfOutputs().get(k)
 					var currentTransactionOutputIndex=k.toLong
-					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime())
+					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime(),currentTransactionOutput.getValue().longValue())
 					resultCounter+=1
 				}
 			}
