@@ -76,7 +76,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
 				StructField("timestamp", IntegerType, false),
-				StructField("value",Decimal,false)
+				StructField("value",DecimalType,false)
 			)
 		)
 		val sqlContext= new SQLContext(sc)
@@ -88,7 +88,7 @@ object SparkScalaBitcoinTransactionGraph {
 		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp","value")
 		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp","source_value")
 		//btcDF.show(10)
-
+		//val sourceDF=btcDF.toDF(inputSourceNames:_*)
 //		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
 //			val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
 //			// create the edges. Basically we need to determine which inputVertexId refers to which outputVertex Id.
