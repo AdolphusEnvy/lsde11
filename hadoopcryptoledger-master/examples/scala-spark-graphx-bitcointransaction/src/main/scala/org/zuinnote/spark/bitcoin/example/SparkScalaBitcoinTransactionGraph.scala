@@ -88,7 +88,9 @@ object SparkScalaBitcoinTransactionGraph {
 		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp","value")
 		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp","source_value")
 		//btcDF.show(10)
-		//val sourceDF=btcDF.toDF(inputSourceNames:_*)
+		val sourceDF=btcDF.toDF(inputSourceNames:_*)
+		val joined_degree1=centralTranscations.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
+		joined_degree1.show(10)
 //		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
 //			val bitcoinAddressIndexed = bitcoinTransactionTuples.map(bitcoinTransactions =>bitcoinTransactions._1).distinct().zipWithIndex()
 //			// create the edges. Basically we need to determine which inputVertexId refers to which outputVertex Id.
@@ -136,7 +138,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigInt)] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,Long)] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
@@ -146,7 +148,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 		// then we can create a tuple for each transaction input: Destination Address (which can be found in the output!), Input Transaction Hash, Current Transaction Hash, Current Transaction Output
 		// as you can see there is no 1:1 or 1:n mapping from input to output in the Bitcoin blockchain, but n:m (all inputs are assigned to all outputs), cf. https://en.bitcoin.it/wiki/From_address
-		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigInt)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int,BigInt)](resultSize)
+		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int,Long)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int,Long)](resultSize)
 		var resultCounter: Int = 0
 		for (i <- 0 to transactionCount-1) { // for each transaction
 			val currentTransaction=bitcoinBlock.getTransactions().get(i)
