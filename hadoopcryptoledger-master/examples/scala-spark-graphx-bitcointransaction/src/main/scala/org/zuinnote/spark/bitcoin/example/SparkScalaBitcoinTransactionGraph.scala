@@ -76,7 +76,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
 				StructField("timestamp", IntegerType, false),
-				StructField("value",DecimalType,false)
+				StructField("value",LongType,false)
 			)
 		)
 		val sqlContext= new SQLContext(sc)
