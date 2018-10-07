@@ -66,7 +66,7 @@ object SparkScalaBitcoinTransactionGraph {
 		// extract a tuple per transaction containing Bitcoin destination address, the input transaction hash, the input transaction output index, and the current transaction hash, the current transaction output index, a (generated) long identifier
 		val bitcoinTransactionTuples = bitcoinBlocksRDD.flatMap(hadoopKeyValueTuple => extractTransactionData(hadoopKeyValueTuple._2))
 
-		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6))
+		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6,p._7))
 
 		val transactionSchema = StructType(
 			Array(
@@ -76,13 +76,14 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
 				StructField("timestamp", IntegerType, false)
+				StructField("value",Decimal,false)
 			)
 		)
 		val sqlContext= new SQLContext(sc)
 		//import sqlContext.implicits._
 		import sqlContext.implicits._
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_F4B004C3CA2E7F96F9FC5BCA767708967AF67A44"))
+		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_99BC78BA577A95A11F1A344D4D2AE55F2F857B98"))
 		centralTranscations.show(10)
 		//btcDF.show(10)
 
@@ -155,7 +156,7 @@ object SparkScalaBitcoinTransactionGraph {
 				for (k <-0 to currentTransaction.getListOfOutputs().size()-1) {
 					val currentTransactionOutput=currentTransaction.getListOfOutputs().get(k)
 					var currentTransactionOutputIndex=k.toLong
-					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime())
+					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime(),currentTransactionOutput.getValue())
 					resultCounter+=1
 				}
 			}
