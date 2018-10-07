@@ -23,7 +23,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.graphx._
 //import org.apache.spark.sql.SQLContext.implicits._
-import SQLContext.implicits._
+//import SQLContext.implicits._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io._
 
@@ -80,7 +80,7 @@ object SparkScalaBitcoinTransactionGraph {
 		)
 		val sqlContext= new SQLContext(sc)
 		//import sqlContext.implicits._
-
+		import sqlContext.implicits._
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_99bc78ba577a95a11f1a344d4d2ae55f2f857b98"))
 		centralTranscations.show(10)
