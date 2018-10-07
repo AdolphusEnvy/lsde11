@@ -52,7 +52,11 @@ object SparkScalaBitcoinTransactionGraph {
 		val conf = new SparkConf().setAppName("Spark-Scala-Graphx BitcoinTransaction Graph (hadoopcryptoledger)")
 		val sc=new SparkContext(conf)
 		val hadoopConf = new Configuration();
+		val spark = org.apache.spark.sql.SparkSession.builder
+			.appName("App name")
+			.getOrCreate
 
+		import spark.implicits._
 		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
 		jobTop5AddressInput(sc,hadoopConf,args(0),args(1))
 		sc.stop()
@@ -76,7 +80,7 @@ object SparkScalaBitcoinTransactionGraph {
 			)
 		)
 		val sqlContext= new SQLContext(sc)
-		import sqlContext.implicits._
+		//import sqlContext.implicits._
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_99bc78ba577a95a11f1a344d4d2ae55f2f857b98"))
 		centralTranscations.show(10)
