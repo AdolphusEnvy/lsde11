@@ -22,7 +22,7 @@ import org.apache.hadoop.conf._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.graphx._
-import org.apache.spark.sql.SQLContext.implicits._
+//import org.apache.spark.sql.SQLContext.implicits._
 
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io._
@@ -52,9 +52,9 @@ object SparkScalaBitcoinTransactionGraph {
 		val conf = new SparkConf().setAppName("Spark-Scala-Graphx BitcoinTransaction Graph (hadoopcryptoledger)")
 		val sc=new SparkContext(conf)
 		val hadoopConf = new Configuration();
-		val spark = org.apache.spark.sql.SparkSession.builder
-			.appName("App name")
-			.getOrCreate
+		val spark = org.apache.spark.sql.SparkSession.builder()
+			.appName("lsde11")
+			.getOrCreate()
 
 		import spark.implicits._
 		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
