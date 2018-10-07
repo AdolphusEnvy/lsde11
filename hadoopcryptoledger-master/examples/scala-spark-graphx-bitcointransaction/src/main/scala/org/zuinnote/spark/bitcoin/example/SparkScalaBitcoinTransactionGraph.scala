@@ -66,7 +66,7 @@ object SparkScalaBitcoinTransactionGraph {
 		// extract a tuple per transaction containing Bitcoin destination address, the input transaction hash, the input transaction output index, and the current transaction hash, the current transaction output index, a (generated) long identifier
 		val bitcoinTransactionTuples = bitcoinBlocksRDD.flatMap(hadoopKeyValueTuple => extractTransactionData(hadoopKeyValueTuple._2))
 
-		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6,p._7))
+		val rowRDD = bitcoinTransactionTuples.map(p => Row(p._1, p._2, p._3, p._4, p._5, p._6))
 
 		val transactionSchema = StructType(
 			Array(
@@ -75,8 +75,7 @@ object SparkScalaBitcoinTransactionGraph {
 				StructField("curr_trans_input_output_idx", LongType, false),
 				StructField("curr_trans_hash", BinaryType, false),
 				StructField("curr_trans_output_idx", LongType, false),
-				StructField("timestamp", IntegerType, false),
-				StructField("value",DecimalType,false)
+				StructField("timestamp", IntegerType, false)
 			)
 		)
 		val sqlContext= new SQLContext(sc)
@@ -85,8 +84,8 @@ object SparkScalaBitcoinTransactionGraph {
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_99BC78BA577A95A11F1A344D4D2AE55F2F857B98"))
 		centralTranscations.show(10)
-		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp","value")
-		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp","source_value")
+		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp")
+		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp")
 		//btcDF.show(10)
 		val sourceDF=btcDF.toDF(inputSourceNames:_*)
 		val joined_degree1=centralTranscations.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
@@ -138,7 +137,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigDecimal)] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int)] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
@@ -148,7 +147,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 		// then we can create a tuple for each transaction input: Destination Address (which can be found in the output!), Input Transaction Hash, Current Transaction Hash, Current Transaction Output
 		// as you can see there is no 1:1 or 1:n mapping from input to output in the Bitcoin blockchain, but n:m (all inputs are assigned to all outputs), cf. https://en.bitcoin.it/wiki/From_address
-		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigDecimal)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int,BigDecimal)](resultSize)
+		val result:Array[(String,Array[Byte],Long,Array[Byte], Long,Int)]=new Array[(String,Array[Byte],Long,Array[Byte],Long,Int)](resultSize)
 		var resultCounter: Int = 0
 		for (i <- 0 to transactionCount-1) { // for each transaction
 			val currentTransaction=bitcoinBlock.getTransactions().get(i)
@@ -160,7 +159,7 @@ object SparkScalaBitcoinTransactionGraph {
 				for (k <-0 to currentTransaction.getListOfOutputs().size()-1) {
 					val currentTransactionOutput=currentTransaction.getListOfOutputs().get(k)
 					var currentTransactionOutputIndex=k.toLong
-					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime(),currentTransactionOutput.getValue())
+					result(resultCounter)=(BitcoinScriptPatternParser.getPaymentDestination(currentTransactionOutput.getTxOutScript()),currentTransactionInputHash,currentTransactionInputOutputIndex,currentTransactionHash,currentTransactionOutputIndex,bitcoinBlock.getTime())
 					resultCounter+=1
 				}
 			}
