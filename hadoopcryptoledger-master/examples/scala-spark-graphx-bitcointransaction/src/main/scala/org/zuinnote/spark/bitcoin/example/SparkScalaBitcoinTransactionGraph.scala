@@ -85,6 +85,8 @@ object SparkScalaBitcoinTransactionGraph {
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_99BC78BA577A95A11F1A344D4D2AE55F2F857B98"))
 		centralTranscations.show(10)
+		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp","value")
+		val inputSourceNames=Seq("source_address","source_trans_input_hash","source_trans_input_output_idx","source_trans_hash","source_trans_output_idx","source_timestamp","source_value")
 		//btcDF.show(10)
 
 //		// create the vertex (vertexId, Bitcoin destination address), keep in mind that the flat table contains the same bitcoin address several times
@@ -134,7 +136,7 @@ object SparkScalaBitcoinTransactionGraph {
 	}
 
 	// extract relevant data
-	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int),BigDecimal] = {
+	def extractTransactionData(bitcoinBlock: BitcoinBlock): Array[(String,Array[Byte],Long,Array[Byte], Long,Int,BigDecimal)] = {
 		// first we need to determine the size of the result set by calculating the total number of inputs multiplied by the outputs of each transaction in the block
 		val transactionCount= bitcoinBlock.getTransactions().size()
 		var resultSize=0
