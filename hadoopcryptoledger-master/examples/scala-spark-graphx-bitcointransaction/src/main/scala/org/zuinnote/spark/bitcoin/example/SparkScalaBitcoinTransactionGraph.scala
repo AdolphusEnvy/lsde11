@@ -16,7 +16,7 @@
 
 package org.zuinnote.spark.bitcoin.example
 
-import com.sun.jdi.LongType
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.hadoop.conf._
