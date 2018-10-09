@@ -27,7 +27,7 @@ import org.apache.spark.graphx._
 //import SQLContext.implicits._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io._
-import org.apache.spark.sql.functions.udf
+import org.apache.spark.sql.Column
 import org.zuinnote.hadoop.bitcoin.format.common._
 import org.zuinnote.hadoop.bitcoin.format.mapreduce._
 
@@ -84,7 +84,7 @@ object SparkScalaBitcoinTransactionGraph {
 		//import sqlContext.implicits._
 		import sqlContext.implicits._
 
-		val toString = udf((payload: Array[Byte]) => new String(payload))
+		def stringify(c: Column) = concat(lit("["), concat_ws(",", c), lit("]"))
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess))
 		centralTranscations.show(10)
@@ -94,19 +94,19 @@ object SparkScalaBitcoinTransactionGraph {
 		val sourceDF=btcDF.select($"dest_address".alias("source_address"), $"curr_trans_input_hash".alias("source_trans_input_hash"),$"curr_trans_input_output_idx".alias("source_trans_input_output_idx"),$"curr_trans_hash".alias("source_trans_hash"), $"curr_trans_output_idx".alias("source_trans_output_idx"),$"timestamp".alias("source_timestamp"),$"value".alias("source_value"))
 		val joined_degree1=centralTranscations.join(sourceDF,centralTranscations("curr_trans_input_hash")===sourceDF("source_trans_hash")&&centralTranscations("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree1.show(10)
-		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash").withColumn("curr_trans_hash", toString($"curr_trans_hash")).distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree1.csv")
+		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash").withColumn("curr_trans_hash", stringify($"curr_trans_hash")).distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree1.csv")
 
 
 		val source_degree1=joined_degree1.select($"source_address".alias("dest_address"), $"source_trans_input_hash".alias("curr_trans_input_hash"),$"source_trans_input_output_idx".alias("curr_trans_input_output_idx"),$"source_trans_hash".alias("curr_trans_hash"), $"source_trans_output_idx".alias("curr_trans_output_idx"),$"source_timestamp".alias("timestamp"),$"source_value".alias("value"))
 		val joined_degree2=source_degree1.join(sourceDF,source_degree1("curr_trans_input_hash")===sourceDF("source_trans_hash")&&source_degree1("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
-		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash").withColumn("curr_trans_hash", toString($"curr_trans_hash")).distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2.csv")
+		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash").withColumn("curr_trans_hash", stringify($"curr_trans_hash")).distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2.csv")
 
 
 		val source_degree2=joined_degree2.select($"source_address".alias("dest_address"), $"source_trans_input_hash".alias("curr_trans_input_hash"),$"source_trans_input_output_idx".alias("curr_trans_input_output_idx"),$"source_trans_hash".alias("curr_trans_hash"), $"source_trans_output_idx".alias("curr_trans_output_idx"),$"source_timestamp".alias("timestamp"),$"source_value".alias("value"))
 		val joined_degree3=source_degree2.join(sourceDF,source_degree2("curr_trans_input_hash")===sourceDF("source_trans_hash")&&source_degree2("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
-		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash").withColumn("curr_trans_hash", toString($"curr_trans_hash")).distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree3.csv")
+		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash").withColumn("curr_trans_hash", stringify($"curr_trans_hash")).distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree3.csv")
 
 //		val source_degree3=joined_degree3.select($"source_address".alias("dest_address"), $"source_trans_input_hash".alias("curr_trans_input_hash"),$"source_trans_input_output_idx".alias("curr_trans_input_output_idx"),$"source_trans_hash".alias("curr_trans_hash"), $"source_trans_output_idx".alias("curr_trans_output_idx"),$"source_timestamp".alias("timestamp"),$"source_value".alias("value"))
 //		val joined_degree4=source_degree3.join(sourceDF,source_degree3("curr_trans_input_hash")===sourceDF("source_trans_hash")&&source_degree3("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
