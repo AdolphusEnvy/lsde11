@@ -21,10 +21,12 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.hadoop.conf._
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.graphx._
 //import org.apache.spark.sql.SQLContext.implicits._
 //import SQLContext.implicits._
+
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io._
 import org.apache.spark.sql.Column
