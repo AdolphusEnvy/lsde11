@@ -84,7 +84,7 @@ object SparkScalaBitcoinTransactionGraph {
 		//import sqlContext.implicits._
 		import sqlContext.implicits._
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		btcDF.select($"dest_address").rdd.takeSample(false,50,1).show
+		println(btcDF.select($"dest_address").rdd.takeSample(false,50,1))
 //		var centralTranscations=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess))
 //		centralTranscations.show(10)
 //		val outputSourceNames=Seq("dest_address","curr_trans_input_hash","curr_trans_input_output_idx","curr_trans_hash","curr_trans_output_idx","timestamp","value")
