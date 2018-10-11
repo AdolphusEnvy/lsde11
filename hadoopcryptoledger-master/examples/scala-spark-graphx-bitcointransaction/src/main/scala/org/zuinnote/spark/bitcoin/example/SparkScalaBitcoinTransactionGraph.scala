@@ -57,7 +57,7 @@ object SparkScalaBitcoinTransactionGraph {
 		val hadoopConf = new Configuration();
 		val spark = org.apache.spark.sql.SparkSession.builder()
 			.getOrCreate()
-
+		spark.conf.set("spark.sql.crossJoin.enabled", "true")
 		import spark.implicits._
 		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
 		jobTop5AddressInput(sc,hadoopConf,args(0),args(1),args(2),args(3))
