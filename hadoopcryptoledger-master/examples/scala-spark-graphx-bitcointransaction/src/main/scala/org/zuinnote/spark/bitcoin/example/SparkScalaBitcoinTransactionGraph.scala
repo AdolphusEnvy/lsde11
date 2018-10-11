@@ -88,7 +88,8 @@ object SparkScalaBitcoinTransactionGraph {
 
 		//def stringify(c: Column) = concat(lit("["), concat_ws(",", c), lit("]"))
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var sameTranscation=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash").join(btcDF)
+		var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash")
+		val sameTranscation=transhash.join(btcDF)
 		//val sameTranscation=btcDF.filter(centralTranscations("curr_trans_hash")===btcDF("curr_trans_hash"))
 		//centralTranscations.show(10)
 
