@@ -57,7 +57,7 @@ object SparkScalaBitcoinTransactionGraph {
 		val hadoopConf = new Configuration();
 		val spark = org.apache.spark.sql.SparkSession.builder()
 			.getOrCreate()
-		spark.conf.set("spark.sql.crossJoin.enabled", "true")
+		//spark.conf.set("spark.sql.crossJoin.enabled", "true")
 		import spark.implicits._
 		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
 		jobTop5AddressInput(sc,hadoopConf,args(0),args(1),args(2),args(3))
@@ -89,7 +89,7 @@ object SparkScalaBitcoinTransactionGraph {
 		//def stringify(c: Column) = concat(lit("["), concat_ws(",", c), lit("]"))
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash")
-		val sameTranscation=transhash.join(btcDF)
+		val sameTranscation=transhash.join(btcDF,sameTranscation("curr_trans_hash")==btcDF("curr_trans_hash"))
 		//val sameTranscation=btcDF.filter(centralTranscations("curr_trans_hash")===btcDF("curr_trans_hash"))
 		//centralTranscations.show(10)
 
@@ -100,8 +100,9 @@ object SparkScalaBitcoinTransactionGraph {
 
 
 		val source_degree1=joined_degree1.select($"source_trans_hash".alias("curr_trans_hash")).join(btcDF)
-		//val same_degree1=btcDF.filter(source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
-		val joined_degree2=source_degree1.join(sourceDF,source_degree1("curr_trans_input_hash")===sourceDF("source_trans_hash")&&source_degree1("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
+		val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
+
+		val joined_degree2=same_degree1.join(sourceDF,same_degree1("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree1("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
 		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2.csv")
 
