@@ -88,7 +88,7 @@ object SparkScalaBitcoinTransactionGraph {
 
 		//def stringify(c: Column) = concat(lit("["), concat_ws(",", c), lit("]"))
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash")
+		var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash").distinct
 		val sameTranscation=transhash.join(btcDF,transhash("curr_trans_hash")===btcDF("curr_trans_hash"))
 		//val sameTranscation=btcDF.filter(centralTranscations("curr_trans_hash")===btcDF("curr_trans_hash"))
 		//centralTranscations.show(10)
@@ -99,8 +99,9 @@ object SparkScalaBitcoinTransactionGraph {
 		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree1.csv")
 
 
-		val source_degree1=joined_degree1.select($"source_trans_hash".alias("curr_trans_hash")).join(btcDF)
-		val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
+		val samehash1=joined_degree1.select($"source_trans_hash".alias("curr_trans_hash")).distinct
+		val same_degree1=samehash1.join(btcDF,samehash1("curr_trans_hash")===btcDF("curr_trans_hash"))
+		//val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
 
 		val joined_degree2=same_degree1.join(sourceDF,same_degree1("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree1("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree2.show(10)
