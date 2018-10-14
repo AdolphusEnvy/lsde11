@@ -173,14 +173,14 @@ object extractTransactionGraph{
 		val hadoopConf = new Configuration();
 
 		//spark.conf.set("spark.sql.crossJoin.enabled", "true")
-		import spark.implicits._
 		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
-		degree2graph(sc,spark,args(0),args(1),args(2),args(3))
+		degree2graph(sc,args(0),args(1),args(2),args(3))
 		sc.stop()
 	}
-	def degree2graph(sc: SparkContext, spark2: Any, inputFile: String, outputFile: String,back_type: String,central_addreess:String): Unit={
+	def degree2graph(sc: SparkContext, inputFile: String, outputFile: String,back_type: String,central_addreess:String): Unit={
 		val spark = org.apache.spark.sql.SparkSession.builder()
 			.getOrCreate()
+		import spark.implicits._
 		val data=spark.read.format("com.databricks.spark.csv").option("header", "true").load(inputFile)
 		val central_data=data.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess) ||$"source_address".equalTo("bitcoinaddress_"+central_addreess))
 		central_data.show(10)
