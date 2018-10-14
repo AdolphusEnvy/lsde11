@@ -184,7 +184,13 @@ object extractTransactionGraph{
 		val data=spark.read.format("com.databricks.spark.csv").option("header", "true").load(inputFile)
 		val central_data=data.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess) ||$"source_address".equalTo("bitcoinaddress_"+central_addreess))
 		central_data.show(10)
+		central_data.distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree1")
 
+		val addresses_degree1=central_data.select($"source_address".alias("degree1_address")).distinct
+		val asinput_degree1=addresses_degree1.join(data,data("source_address")===addresses_degree1("degree1_address")).select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp")
+		val asoutput_degree1=addresses_degree1.join(data,data("dest_address")===addresses_degree1("degree1_address")).select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp")
+		val degree1=asinput_degree1.union(asoutput_degree1).toDF
+		degree1.distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2")
 	}
 }
 
