@@ -88,36 +88,36 @@ object SparkScalaBitcoinTransactionGraph {
 
 		//def stringify(c: Column) = concat(lit("["), concat_ws(",", c), lit("]"))
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
-		var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash").distinct
-		val sameTranscation=transhash.join(btcDF,transhash("curr_trans_hash")===btcDF("curr_trans_hash"))
+		//var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash").distinct
+		//val sameTranscation=transhash.join(btcDF,transhash("curr_trans_hash")===btcDF("curr_trans_hash"))
 		//val sameTranscation=btcDF.filter(centralTranscations("curr_trans_hash")===btcDF("curr_trans_hash"))
 		//centralTranscations.show(10)
 
 		val sourceDF=btcDF.select($"dest_address".alias("source_address"), $"curr_trans_input_hash".alias("source_trans_input_hash"),$"curr_trans_input_output_idx".alias("source_trans_input_output_idx"),$"curr_trans_hash".alias("source_trans_hash"), $"curr_trans_output_idx".alias("source_trans_output_idx"),$"timestamp".alias("source_timestamp"),$"value".alias("source_value"))
-		val joined_degree1=sameTranscation.join(sourceDF,sameTranscation("curr_trans_input_hash")===sourceDF("source_trans_hash")&&sameTranscation("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
+		val joined_degree1=btcDF.join(sourceDF,btcDF("curr_trans_input_hash")===sourceDF("source_trans_hash")&&btcDF("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree1.show(10)
 		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree1.csv")
 
 
-		val sameDest1=joined_degree1.select($"source_address".alias("dest_address")).distinct
-		val sameTransaction1=sameDest1.join(btcDF,sameDest1("dest_address")===btcDF("dest_address")).select($"curr_trans_hash")
-		val same_degree1=sameTransaction1.join(btcDF,sameTransaction1("curr_trans_hash")===btcDF("curr_trans_hash"))
-		//val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
-
-		val joined_degree2=same_degree1.join(sourceDF,same_degree1("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree1("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
-		joined_degree2.show(10)
-		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2.csv")
-
-		val sameDest2=joined_degree2.select($"source_address".alias("dest_address")).distinct
-		val sameTransaction2=sameDest2.join(btcDF,sameDest2("dest_address")===btcDF("dest_address")).select($"curr_trans_hash")
-		val same_degree2=sameTransaction2.join(btcDF,sameTransaction2("curr_trans_hash")===btcDF("curr_trans_hash"))
-		//val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
-
-		val joined_degree3=same_degree2.join(sourceDF,same_degree2("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree2("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
-		joined_degree3.show(10)
-		joined_degree3.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree3.csv")
-
-
+//		val sameDest1=joined_degree1.select($"source_address".alias("dest_address")).distinct
+//		val sameTransaction1=sameDest1.join(btcDF,sameDest1("dest_address")===btcDF("dest_address")).select($"curr_trans_hash")
+//		val same_degree1=sameTransaction1.join(btcDF,sameTransaction1("curr_trans_hash")===btcDF("curr_trans_hash"))
+//		//val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
+//
+//		val joined_degree2=same_degree1.join(sourceDF,same_degree1("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree1("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
+//		joined_degree2.show(10)
+//		joined_degree2.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2.csv")
+//
+//		val sameDest2=joined_degree2.select($"source_address".alias("dest_address")).distinct
+//		val sameTransaction2=sameDest2.join(btcDF,sameDest2("dest_address")===btcDF("dest_address")).select($"curr_trans_hash")
+//		val same_degree2=sameTransaction2.join(btcDF,sameTransaction2("curr_trans_hash")===btcDF("curr_trans_hash"))
+//		//val same_degree1=source_degree1.join(btcDF,source_degree1("curr_trans_hash")===btcDF("curr_trans_hash"))
+//
+//		val joined_degree3=same_degree2.join(sourceDF,same_degree2("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree2("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
+//		joined_degree3.show(10)
+//		joined_degree3.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree3.csv")
+//
+//
 		//		val source_degree2=joined_degree2.select($"source_address".alias("dest_address"), $"source_trans_input_hash".alias("curr_trans_input_hash"),$"source_trans_input_output_idx".alias("curr_trans_input_output_idx"),$"source_trans_hash".alias("curr_trans_hash"), $"source_trans_output_idx".alias("curr_trans_output_idx"),$"source_timestamp".alias("timestamp"),$"source_value".alias("value"))
 //		val same_degree2=btcDF.filter(source_degree2("curr_trans_hash")===btcDF("curr_trans_hash"))
 //		val joined_degree3=same_degree2.join(sourceDF,same_degree2("curr_trans_input_hash")===sourceDF("source_trans_hash")&&same_degree2("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
