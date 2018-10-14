@@ -24,6 +24,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.graphx._
+import org.zuinnote.spark.bitcoin.example.SparkScalaBitcoinTransactionGraph.jobTop5AddressInput
 //import org.apache.spark.sql.SQLContext.implicits._
 //import SQLContext.implicits._
 
@@ -165,7 +166,26 @@ object SparkScalaBitcoinTransactionGraph {
 
 
 }
+object extractTransactionGraph{
+	def main(args: Array[String]): Unit = {
+		val conf = new SparkConf().setAppName("Spark-Scala-Graphx BitcoinTransaction Graph (hadoopcryptoledger)")
+		val sc=new SparkContext(conf)
+		val hadoopConf = new Configuration();
+		val spark = org.apache.spark.sql.SparkSession.builder()
+			.getOrCreate()
+		//spark.conf.set("spark.sql.crossJoin.enabled", "true")
+		import spark.implicits._
+		hadoopConf.set("hadoopcryptoledger.bitcoinblockinputformat.filter.magic","F9BEB4D9");
+		degree2graph(sc,spark,args(0),args(1),args(2),args(3))
+		sc.stop()
+	}
+	def degree2graph(sc: SparkContext, spark: Any, inputFile: String, outputFile: String,back_type: String,central_addreess:String): Unit={
+		val data=spark.read.format("com.databricks.spark.csv").option("header", "true").load(inputFile)
+		val central_data=data.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess) ||$"source_address".equalTo("bitcoinaddress_"+central_addreess))
+		central_data.show(10)
 
+	}
+}
 
 /**
 	* Helper class to make byte arrays comparable
