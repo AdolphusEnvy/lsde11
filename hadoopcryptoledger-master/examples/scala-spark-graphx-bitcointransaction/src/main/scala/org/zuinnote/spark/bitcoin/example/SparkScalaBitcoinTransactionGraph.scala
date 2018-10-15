@@ -198,16 +198,17 @@ object extractTransactionGraph{
 		val data=spark.read.parquet(inputFile)
 		val central_data=data.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess) ||$"source_address".equalTo("bitcoinaddress_"+central_addreess))
 		central_data.show(10)
-		val ralevent_central=central_data.select($"string_hash".alias("central_hash")).join(data,central_data("central_hash")===data("string_hash"))
+		val central_hash=central_data.select($"string_hash".alias("central_hash"))
+		val ralevent_central=central_hash.join(data,central_hash("central_hash")===data("string_hash"))
 		ralevent_central.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree1")
 
 		val addresses_degree1=ralevent_central.select($"source_address".alias("degree1_address")).distinct
 		val asinput_degree1=addresses_degree1.join(data,data("source_address")===addresses_degree1("degree1_address")).select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"string_hash")
 		val asoutput_degree1=addresses_degree1.join(data,data("dest_address")===addresses_degree1("degree1_address")).select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"string_hash")
 		val degree1=asinput_degree1.union(asoutput_degree1).toDF
-		val ralevent_degree1=degree1.select($"string_hash".alias("central_hash")).join(data,central_data("central_hash")===data("string_hash"))
-		ralevent_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2")
-	}
+		val degree1_hash=degree1.select($"string_hash".alias("central_hash"))
+		val ralevent_degree1=degree1_hash.join(data,degree1_hash("central_hash")===data("string_hash"))
+		ralevent_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2")	}
 }
 
 /**
