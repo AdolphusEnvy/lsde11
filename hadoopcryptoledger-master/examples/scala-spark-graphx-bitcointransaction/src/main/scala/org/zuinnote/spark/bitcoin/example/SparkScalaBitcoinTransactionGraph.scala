@@ -86,7 +86,8 @@ object SparkScalaBitcoinTransactionGraph {
 		val sqlContext= new SQLContext(sc)
 		//import sqlContext.implicits._
 		import sqlContext.implicits._
-
+		import org.apache.spark.sql.functions.udf
+		val toString = udf((payload: Array[Byte]) => new String(payload))
 		//def stringify(c: Column) = concat(lit("["), concat_ws(",", c), lit("]"))
 		val btcDF = sqlContext.createDataFrame(rowRDD, transactionSchema)
 		//var transhash=btcDF.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess)).select($"curr_trans_hash").distinct
@@ -97,7 +98,7 @@ object SparkScalaBitcoinTransactionGraph {
 		val sourceDF=btcDF.select($"dest_address".alias("source_address"), $"curr_trans_input_hash".alias("source_trans_input_hash"),$"curr_trans_input_output_idx".alias("source_trans_input_output_idx"),$"curr_trans_hash".alias("source_trans_hash"), $"curr_trans_output_idx".alias("source_trans_output_idx"),$"timestamp".alias("source_timestamp"),$"value".alias("source_value"))
 		val joined_degree1=btcDF.join(sourceDF,btcDF("curr_trans_input_hash")===sourceDF("source_trans_hash")&&btcDF("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree1.show(10)
-		joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/tmpdata")
+		joined_degree1.withColumn("string_hash", toString(joined_degree1("curr_trans_hash"))).select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/tmpdata")
 
 
 //		val sameDest1=joined_degree1.select($"source_address".alias("dest_address")).distinct
