@@ -98,7 +98,7 @@ object SparkScalaBitcoinTransactionGraph {
 		val sourceDF=btcDF.select($"dest_address".alias("source_address"), $"curr_trans_input_hash".alias("source_trans_input_hash"),$"curr_trans_input_output_idx".alias("source_trans_input_output_idx"),$"curr_trans_hash".alias("source_trans_hash"), $"curr_trans_output_idx".alias("source_trans_output_idx"),$"timestamp".alias("source_timestamp"),$"value".alias("source_value"))
 		val joined_degree1=btcDF.join(sourceDF,btcDF("curr_trans_input_hash")===sourceDF("source_trans_hash")&&btcDF("curr_trans_input_output_idx")===sourceDF("source_trans_output_idx"))
 		joined_degree1.show(10)
-		val data=joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash".alias("central_hash")).distinct
+		val data=joined_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"curr_trans_hash".alias("string_hash")).distinct
 
 		val central_data=data.filter($"dest_address".equalTo("bitcoinaddress_"+central_addreess) ||$"source_address".equalTo("bitcoinaddress_"+central_addreess))
 		central_data.show(10)
