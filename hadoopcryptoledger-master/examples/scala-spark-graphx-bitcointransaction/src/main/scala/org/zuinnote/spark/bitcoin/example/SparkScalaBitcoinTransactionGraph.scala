@@ -111,7 +111,7 @@ object SparkScalaBitcoinTransactionGraph {
 		val asoutput_degree1=addresses_degree1.join(data,data("dest_address")===addresses_degree1("degree1_address")).select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp",$"string_hash")
 		val degree1=asinput_degree1.union(asoutput_degree1).toDF
 		val degree1_hash=degree1.select($"string_hash".alias("central_hash"))
-		val ralevent_degree1.join(data,degree1_hash("central_hash")===data("string_hash"))
+		val ralevent_degree1=degree1_hash.join(data,degree1_hash("central_hash")===data("string_hash"))
 		ralevent_degree1.select($"dest_address",$"value",$"source_address",$"source_value",$"timestamp").distinct.write.format("com.databricks.spark.csv").option("header", "true").save(outputFile+"/"+back_type+"/degree2")
 
 		//		val sameDest1=joined_degree1.select($"source_address".alias("dest_address")).distinct
